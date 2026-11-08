@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lab Splunk L1</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root {
+  --bg: #F4F5F1; --surface: #FCFCFA; --ink: #142133; --muted: #566274; --line: #D9DDD4;
+  --accent: #C2410C; --accent-soft: #FBEADB; --ok: #1F7A4D; --ok-soft: #E2F2E9;
+  --code-bg: #0F1B2D; --code-fg: #E6EDF3;
+  --font-body: 'IBM Plex Sans Thai', Tahoma, 'Leelawadee UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0E1622; --surface: #16212F; --ink: #E7ECF2; --muted: #9AA8B8; --line: #2A3747;
+    --accent: #F5A65B; --accent-soft: #3A2616; --ok: #6FD3A0; --ok-soft: #173326;
+    --code-bg: #0A111B; --code-fg: #E6EDF3; color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.6; padding: 0 16px 48px; }
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+header { position: sticky; top: 0; z-index: 5; background: var(--bg); padding: 16px 0 12px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 12px; }
+.eyebrow { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+h1 { font-size: 22px; font-weight: 600; margin: 0; }
+h2 { font-size: 16px; margin: 4px 0 0; font-weight: 600; }
+nav { display: flex; gap: 4px; flex-wrap: wrap; }
+nav button { font: inherit; font-size: 15px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); padding: 6px 14px; border-radius: 8px; cursor: pointer; }
+nav button[aria-selected="true"] { border-color: var(--accent); box-shadow: inset 0 -2px 0 var(--accent); font-weight: 600; }
+button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.task { font-size: 17px; font-weight: 500; }
+.window { display: flex; flex-direction: column; gap: 8px; background: var(--accent-soft); border-radius: 10px; padding: 12px 14px; }
+.window b { font-weight: 600; }
+.spl { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.spl code { font-family: var(--font-mono); font-size: 13px; background: var(--code-bg); color: var(--code-fg); padding: 6px 10px; border-radius: 6px; overflow-wrap: anywhere; min-width: 0; }
+.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.field label { font-size: 14px; font-weight: 600; }
+.req { color: var(--accent); }
+input[type=text], textarea, select { font: inherit; font-size: 15px; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; width: 100%; min-width: 0; }
+textarea { resize: vertical; min-height: 64px; }
+textarea.code { font-family: var(--font-mono); font-size: 13px; background: var(--code-bg); color: var(--code-fg); min-height: 110px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; }
+.full { grid-column: 1 / -1; }
+@media (max-width: 640px) { .grid2 { grid-template-columns: 1fr; } }
+.btn { font: inherit; font-size: 15px; padding: 9px 18px; border-radius: 8px; cursor: pointer; border: 1px solid var(--line); background: var(--surface); color: var(--ink); }
+.btn.small { font-size: 13px; padding: 4px 10px; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 600; }
+.btn:disabled { opacity: 0.5; cursor: default; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+.hint { font-size: 14px; color: var(--muted); }
+.msg { padding: 14px 16px; border-radius: 10px; font-size: 15px; background: var(--accent-soft); }
+.msg.ok { background: var(--ok-soft); color: var(--ink); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow">SOC Training · Splunk L1</div>
+      <h1>Lab Splunk L1: โจทย์และส่งคำตอบ</h1>
+    </div>
+    <nav id="tabs" role="tablist"></nav>
+  </header>
+
+  <div class="card">
+    <div class="grid2">
+      <div class="field">
+        <label for="f_name">ชื่อ-นามสกุล <span class="req">*</span></label>
+        <input type="text" id="f_name" autocomplete="name" placeholder="เช่น สมชาย ใจดี">
+      </div>
+      <div class="field">
+        <label for="f_shift">กะ / ทีม</label>
+        <input type="text" id="f_shift" placeholder="เช่น กะเช้า ทีม A">
+      </div>
+    </div>
+    <p class="hint">ทุก Lab ล็อกช่วงเวลาไว้ ให้ใส่ earliest / latest ใน query ตามที่กำหนด (ไม่ต้องตั้ง Time picker) ผลจะเหมือนกันทุกรอบ ระบบเก็บร่างไว้ในเบราว์เซอร์นี้ระหว่างทำ</p>
+  </div>
+
+  <div class="card" id="labCard"></div>
+
+  <div id="msg" class="msg" hidden></div>
+  <div class="actions">
+    <span class="hint" id="progress"></span>
+    <button class="btn primary" id="submitBtn" type="button">ส่งคำตอบ</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  // ใส่ URL ของ Apps Script Web App (ลงท้าย /exec)
+  var ENDPOINT = 'https://script.google.com/macros/s/AKfycbxIRe1qikTOSG9O4G8ll6OtYumew6KUY_fvxgDHLY1ZNM3Zn5TDjpXJhKAPoNT6P_uK/exec';
+
+  var LABS = [
+    { id: 'lab1', name: 'Lab 1 · Brute force',
+      task: 'หา 5 src_ip ที่ login Windows ล้มเหลวมากที่สุด แล้วตรวจว่า IP นั้น login สำเร็จหรือไม่',
+      window: '7 พ.ย. 2569 12:00 – 8 พ.ย. 2569 12:00',
+      spl: 'earliest="11/07/2026:12:00:00" latest="11/08/2026:12:00:00"' },
+    { id: 'lab2', name: 'Lab 2 · Endpoint',
+      task: 'จาก SentinelOne เครื่องไหนมี threat ที่ยัง not_mitigated? เลือก 1 เคส แล้ว pivot ด้วย sha1',
+      window: '9 ต.ค. 2569 00:00 – 8 พ.ย. 2569 12:00',
+      spl: 'earliest="10/09/2026:00:00:00" latest="11/08/2026:12:00:00"' },
+    { id: 'lab3', name: 'Lab 3 · Network',
+      task: 'หา src_ip ที่ติดต่อมากกว่า 50 port แล้วตัดสินว่าเป็น scanner ปกติ หรือผิดปกติ',
+      window: '8 พ.ย. 2569 11:55 – 12:10 (ย้อนดูพฤติกรรม 1–8 พ.ย. 2569)',
+      spl: 'earliest="11/08/2026:11:55:00" latest="11/08/2026:12:10:00"' },
+    { id: 'lab4', name: 'Lab 4 · IOC',
+      task: 'เลือก 1 IOC จาก | inputlookup cds_misp_iocs แล้วค้นทุก index ด้วย tstats ว่าพบที่ไหนบ้าง',
+      window: '1 พ.ย. 2569 00:00 – 8 พ.ย. 2569 12:00',
+      spl: 'earliest="11/01/2026:00:00:00" latest="11/08/2026:12:00:00"' }
+  ];
+  var NOTE = [
+    ['summary', '1. สรุปเหตุการณ์ (1–2 ประโยค)', 'textarea'],
+    ['time', '2. เวลา: first seen – last seen', 'text'],
+    ['asset', '3. Asset และ User ที่เกี่ยวข้อง', 'text'],
+    ['ioc', '4. IOC: IP, domain, hash, user', 'text'],
+    ['evidence', '5. หลักฐาน (query / ผลที่เห็น)', 'textarea'],
+    ['protection', '6. ระบบป้องกันทำงานไหม (blocked / allowed)', 'text'],
+    ['verdict', '7. Verdict', 'select'],
+    ['reason', '7. เหตุผลของ Verdict', 'textarea'],
+    ['action', '8. Action ที่ทำ / แจ้งใคร เมื่อไหร่', 'textarea']
+  ];
+  var VERDICTS = ['', 'True Positive', 'Benign', 'False Positive', 'Suspicious (ต้องตรวจเพิ่ม)', 'ไม่พบสิ่งผิดปกติ'];
+  var KEY = 'splunk-l1-lab-draft';
+
+  var state = { name: '', shift: '', labs: {} };
+  try { var saved = JSON.parse(localStorage.getItem(KEY) || 'null'); if (saved && saved.labs) state = saved; } catch (e) {}
+  var current = 'lab1';
+  function $(id) { return document.getElementById(id); }
+  function lab(id) { if (!state.labs[id]) state.labs[id] = {}; return state.labs[id]; }
+  function done(id) { var d = state.labs[id] || {}; return !!((d.answer || '').trim() && d.verdict); }
+  function persist() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+  function msg(text, ok) { var m = $('msg'); m.textContent = text; m.className = 'msg' + (ok ? ' ok' : ''); m.hidden = !text; }
+
+  function renderTabs() {
+    var nav = $('tabs'); nav.innerHTML = '';
+    LABS.forEach(function (L) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.setAttribute('role', 'tab');
+      b.setAttribute('aria-selected', String(current === L.id));
+      b.textContent = (done(L.id) ? '✓ ' : '') + L.name;
+      b.onclick = function () { current = L.id; render(); };
+      nav.appendChild(b);
+    });
+  }
+
+  function field(L, key, label, kind, required) {
+    var d = lab(L.id);
+    var w = document.createElement('div'); w.className = 'field' + (kind === 'textarea' || kind === 'code' ? ' full' : '');
+    var lb = document.createElement('label'); var fid = 'f_' + L.id + '_' + key; lb.htmlFor = fid; lb.textContent = label;
+    if (required) { var s = document.createElement('span'); s.className = 'req'; s.textContent = ' *'; lb.appendChild(s); }
+    var el;
+    if (kind === 'select') {
+      el = document.createElement('select');
+      VERDICTS.forEach(function (v) { var o = document.createElement('option'); o.value = v; o.textContent = v || 'เลือก Verdict'; el.appendChild(o); });
+    } else if (kind === 'textarea' || kind === 'code') {
+      el = document.createElement('textarea'); if (kind === 'code') { el.className = 'code'; el.spellcheck = false; }
+    } else { el = document.createElement('input'); el.type = 'text'; }
+    el.id = fid; el.value = d[key] || '';
+    el.addEventListener(kind === 'select' ? 'change' : 'input', function () {
+      d[key] = el.value; persist();
+      if (key === 'answer' || key === 'verdict') { renderTabs(); progress(); }
+    });
+    w.appendChild(lb); w.appendChild(el); return w;
+  }
+
+  function renderLab() {
+    var L = LABS.filter(function (x) { return x.id === current; })[0];
+    var c = $('labCard'); c.innerHTML = '';
+    var e = document.createElement('div'); e.className = 'eyebrow'; e.textContent = L.name;
+    var t = document.createElement('div'); t.className = 'task'; t.textContent = L.task;
+    var win = document.createElement('div'); win.className = 'window';
+    var wl = document.createElement('div'); var b = document.createElement('b'); b.textContent = 'ช่วงเวลา: '; wl.appendChild(b); wl.appendChild(document.createTextNode(L.window));
+    var sp = document.createElement('div'); sp.className = 'spl';
+    var code = document.createElement('code'); code.textContent = L.spl;
+    var cp = document.createElement('button'); cp.type = 'button'; cp.className = 'btn small'; cp.textContent = 'คัดลอก';
+    cp.onclick = function () {
+      if (navigator.clipboard) navigator.clipboard.writeText(L.spl).then(function () { cp.textContent = 'คัดลอกแล้ว'; }, function () { select(code); });
+      else select(code);
+    };
+    sp.appendChild(code); sp.appendChild(cp);
+    win.appendChild(wl); win.appendChild(sp);
+    c.appendChild(e); c.appendChild(t); c.appendChild(win);
+    var g1 = document.createElement('div'); g1.className = 'grid2';
+    g1.appendChild(field(L, 'query', 'Query ที่ใช้ (วางได้หลาย query)', 'code'));
+    g1.appendChild(field(L, 'answer', 'คำตอบของโจทย์', 'textarea', true));
+    c.appendChild(g1);
+    var h = document.createElement('h2'); h.textContent = 'Case note'; c.appendChild(h);
+    var g = document.createElement('div'); g.className = 'grid2';
+    NOTE.forEach(function (n) { g.appendChild(field(L, n[0], n[1], n[2], n[0] === 'verdict')); });
+    c.appendChild(g);
+  }
+  function select(el) { var r = document.createRange(); r.selectNodeContents(el); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r); }
+
+  function progress() {
+    var n = LABS.filter(function (L) { return done(L.id); }).length;
+    $('progress').textContent = 'ทำแล้ว ' + n + ' จาก 4 Lab (ต้องมีคำตอบและ Verdict ครบทุก Lab จึงส่งได้)';
+  }
+  function render() {
+    $('f_name').value = state.name || ''; $('f_shift').value = state.shift || '';
+    renderTabs(); renderLab(); progress();
+  }
+
+  $('f_name').addEventListener('input', function (e) { state.name = e.target.value; persist(); });
+  $('f_shift').addEventListener('input', function (e) { state.shift = e.target.value; persist(); });
+
+  $('submitBtn').addEventListener('click', function () {
+    if (!(state.name || '').trim()) { msg('กรุณากรอกชื่อ-นามสกุลก่อนส่ง'); $('f_name').focus(); return; }
+    var missing = LABS.filter(function (L) { return !done(L.id); }).map(function (L) { return L.name; });
+    if (missing.length) { msg('ยังขาดคำตอบหรือ Verdict ใน: ' + missing.join(', ')); return; }
+    if (ENDPOINT.indexOf('https://script.google.com/') !== 0) { msg('หน้านี้ยังไม่ได้ตั้งค่าที่เก็บคำตอบ กรุณาแจ้งผู้สอน'); return; }
+    var btn = $('submitBtn'); btn.disabled = true; btn.textContent = 'กำลังส่ง…'; msg('');
+    fetch(ENDPOINT, { method: 'POST', body: JSON.stringify(state) })
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        if (res && res.ok) { msg('ส่งคำตอบแล้ว ขอบคุณครับ ถ้าส่งซ้ำ ระบบจะบันทึกเป็นอีกแถว ผู้สอนจะดูแถวล่าสุด', true); }
+        else { msg('ส่งไม่สำเร็จ: ' + ((res && res.error) || 'ไม่ทราบสาเหตุ') + ' กรุณาลองใหม่หรือแจ้งผู้สอน'); }
+      })
+      .catch(function () { msg('ส่งไม่สำเร็จ ตรวจการเชื่อมต่ออินเทอร์เน็ตแล้วลองใหม่ คำตอบยังอยู่ในหน้านี้'); })
+      .then(function () { btn.disabled = false; btn.textContent = 'ส่งคำตอบ'; });
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
